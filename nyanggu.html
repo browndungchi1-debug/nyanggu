@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>냥구 키우기</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        user-select: none;
+    }
+
+    body {
+        margin: 0;
+        height: 100vh;
+        background: linear-gradient(135deg, #dbeafe, #eef2ff);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Malgun Gothic", Arial, sans-serif;
+    }
+
+    body.dark {
+        background: linear-gradient(135deg, #020617, #111827);
+    }
+
+    #gameWindow {
+        width: 960px;
+        height: 640px;
+        background: #fff8e7;
+        border: 4px solid #2563eb;
+        border-radius: 14px;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        position: relative;
+    }
+
+    body.dark #gameWindow {
+        background: #111827;
+        border-color: #64748b;
+    }
+
+    #titleBar {
+        height: 42px;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        justify-content: space-between;
+    }
+
+    body.dark #titleBar {
+        background: linear-gradient(90deg, #020617, #334155);
+    }
+
+    #coinBox {
+        min-width: 110px;
+        text-align: center;
+        background: white;
+        color: #111827;
+        padding: 6px 14px;
+        border-radius: 18px;
+        border: 2px solid #facc15;
+        font-weight: bold;
+    }
+
+    #content {
+        display: flex;
+        height: calc(100% - 42px);
+    }
+
+    #leftMenu {
+        width: 220px;
+        background: linear-gradient(#f8fafc, #e2e8f0);
+        border-right: 2px solid #cbd5e1;
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    body.dark #leftMenu {
+        background: linear-gradient(#1e293b, #0f172a);
+        border-right-color: #475569;
+        color: white;
+    }
+
+    .menuMainBtn,
+    .menuBtn,
+    .subBtn {
+        width: 100%;
+        min-height: 38px;
+        margin-bottom: 8px;
+        border: 2px solid #94a3b8;
+        border-radius: 10px;
+        background: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.15s;
+    }
+
+    .menuMainBtn {
+        height: 46px;
+        background: #2563eb;
+        color: white;
+        border-color: #1d4ed8;
+        font-size: 16px;
+    }
+
+    .menuBtn {
+        background: #eff6ff;
+        color: #1e3a8a;
+    }
+
+    .subBtn {
+        background: white;
+        color: #111827;
+        font-weight: normal;
+        text-align: left;
+        padding-left: 18px;
+    }
+
+    .menuMainBtn:hover,
+    .menuBtn:hover,
+    .subBtn:hover {
+        transform: translateY(-1px);
+        filter: brightness(0.97);
+    }
+
+    body.dark .menuBtn {
+        background: #334155;
+        color: white;
+    }
+
+    body.dark .subBtn {
+        background: #1e293b;
+        color: white;
+    }
+
+    .categoryTitle {
+        margin: 14px 0 8px;
+        font-size: 13px;
+        font-weight: bold;
+        color: #475569;
+        border-bottom: 1px solid #cbd5e1;
+        padding-bottom: 4px;
+    }
+
+    body.dark .categoryTitle {
+        color: #cbd5e1;
+        border-bottom-color: #475569;
+    }
+
+    #menuContent {
+        display: none;
+    }
+
+    #menuContent.open {
+        display: block;
+    }
+
+    #mainPanel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #mainArea {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(#fff7ed 0%, #fef3c7 100%);
+    }
+
+    body.dark #mainArea {
+        background: linear-gradient(#1e293b 0%, #334155 100%);
+    }
+
+    #mainArea::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 82px;
+        background: linear-gradient(#bbf7d0, #86efac);
+        border-top: 2px solid #65a30d;
+        z-index: 1;
+    }
+
+    body.dark #mainArea::before {
+        background: linear-gradient(#14532d, #166534);
+        border-top-color: #22c55e;
+    }
+
+#cat {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    position: absolute;
+    left: 240px;
+    top: 45px;
+    cursor: grab;
+    z-index: 20;
+    transition: filter 0.15s;
+}
+
+    #cat:hover {
+        filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.25));
+    }
+
+    #infoPanel {
+        height: 170px;
+        background: #ffffff;
+        border-top: 2px solid #cbd5e1;
+        padding: 14px 20px;
+        font-size: 17px;
+        line-height: 1.7;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    body.dark #infoPanel {
+        background: #0f172a;
+        color: white;
+        border-top-color: #475569;
+    }
+
+    #lifeBox {
+        font-size: 18px;
+        font-weight: bold;
+        color: #dc2626;
+    }
+
+    body.dark #lifeBox {
+        color: #f87171;
+    }
+
+    #sidePanel {
+        position: absolute;
+        left: 235px;
+        top: 58px;
+        width: 470px;
+        max-height: 520px;
+        background: white;
+        border: 3px solid #2563eb;
+        border-radius: 14px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+        padding: 14px;
+        z-index: 100;
+        display: none;
+        overflow-y: auto;
+    }
+
+    body.dark #sidePanel {
+        background: #111827;
+        color: white;
+        border-color: #64748b;
+    }
+
+    #sidePanel h2 {
+        margin: 0 0 12px 0;
+        font-size: 22px;
+        color: #1d4ed8;
+    }
+
+    body.dark #sidePanel h2 {
+        color: #93c5fd;
+    }
+
+    .panelItem {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background: #f8fafc;
+        gap: 10px;
+    }
+
+    body.dark .panelItem {
+        background: #1e293b;
+        border-color: #475569;
+    }
+
+    .itemName {
+        font-weight: bold;
+    }
+
+    .itemDesc {
+        font-size: 13px;
+        color: #475569;
+        margin-top: 3px;
+    }
+
+    body.dark .itemDesc {
+        color: #cbd5e1;
+    }
+
+    .panelBtn {
+        border: none;
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #2563eb;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .panelBtn:hover {
+        background: #1d4ed8;
+    }
+
+    .closeBtn {
+        float: right;
+        border: none;
+        background: #ef4444;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .poop {
+        width: 52px;
+        position: absolute;
+        cursor: pointer;
+        z-index: 15;
+    }
+
+    .floatingItem {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        z-index: 300;
+        pointer-events: none;
+        border: 2px solid #334155;
+        border-radius: 16px;
+        background: white;
+        color: #111827;
+        font-size: 36px;
+        line-height: 54px;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+    }
+
+    .comboText {
+        position: absolute;
+        color: #dc2626;
+        font-weight: bold;
+        font-size: 22px;
+        pointer-events: none;
+        animation: popUp 0.8s forwards;
+        z-index: 300;
+    }
+
+    @keyframes popUp {
+        to {
+            transform: translateY(-55px);
+            opacity: 0;
+        }
+    }
+
+    #messageBox {
+        position: absolute;
+        left: 50%;
+        top: 70px;
+        transform: translateX(-50%);
+        background: rgba(15, 23, 42, 0.92);
+        color: white;
+        padding: 12px 22px;
+        border-radius: 20px;
+        z-index: 400;
+        font-weight: bold;
+        display: none;
+    }
+
+    #endScreen {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.96);
+        color: white;
+        z-index: 999;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #endScreen h1 {
+        font-size: 42px;
+        margin-bottom: 10px;
+    }
+
+    #endScreen button {
+        margin-top: 20px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .smallText {
+        font-size: 14px;
+        color: #475569;
+        line-height: 1.6;
+    }
+
+    body.dark .smallText {
+        color: #cbd5e1;
+    }
+</style>
+</head>
+
+<body>
+
+<div id="gameWindow">
+    <div id="titleBar">
+        <div>쌈뽕한 고양이, 냥구 키우기</div>
+        <div id="coinBox">COIN <span id="coin">0</span></div>
+    </div>
+
+    <div id="content">
+        <div id="leftMenu">
+            <button class="menuMainBtn" onclick="toggleMenu()">메뉴 열기</button>
+
+            <div id="menuContent">
+                <div class="categoryTitle">기본 카테고리</div>
+
+                <button class="menuBtn" onclick="toggleSection('settingSection')">설정</button>
+                <div id="settingSection" style="display:none;">
+                    <button class="subBtn" onclick="toggleTheme()">테마 변경</button>
+                    <button class="subBtn" onclick="togglePopup()">팝업 켜기/끄기</button>
+                </div>
+
+                <button class="menuBtn" onclick="showDeveloper()">개발자</button>
+                <button class="menuBtn" onclick="showLanguage()">사용언어</button>
+
+                <div class="categoryTitle">냥구 카테고리</div>
+
+                <button class="menuBtn" onclick="showProfile()">프로필</button>
+                <button class="menuBtn" onclick="openShop()">상점</button>
+                <button class="menuBtn" onclick="openInventory()">인벤토리</button>
+
+                <button class="menuBtn" onclick="toggleSection('actionSection')">액션</button>
+                <div id="actionSection" style="display:none;">
+                    <button class="subBtn" onclick="showFeedPanel()">먹이기</button>
+                    <button class="subBtn" onclick="sleepCat()">재우기</button>
+                    <button class="subBtn" onclick="putDownItemByButton()">물건 내려놓기</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mainPanel">
+            <div id="mainArea">
+                <img id="cat" src="nyanggu_happy.png">
+            </div>
+
+            <div id="infoPanel">
+                <div>
+                    이름 : 냥구 (모티브 : 전구)<br>
+                    나이 : <span id="ageText">0</span>살<br>
+                    상태 : <span id="statusText">기분 좋음</span><br>
+                    배고픔 : <span id="hunger">100</span><br>
+                    목마름 : <span id="thirst">100</span>
+                </div>
+
+                <div>
+                    <div id="lifeBox">체력 : <span id="lifeText">3 / 3</span></div>
+                    현재 든 물건 : <span id="heldText">없음</span><br>
+                    냥구 이동 : 마우스로 끌기<br>
+                    아이템 사용 : 물건 든 상태로 냥구 클릭
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidePanel"></div>
+    <div id="messageBox"></div>
+
+    <div id="endScreen">
+        <h1>냥구가 가출했어요!</h1>
+        <p>게임이 종료됐어요 다시시작하세요</p>
+        <button onclick="resetGame()">다시 시작하기</button>
+    </div>
+</div>
+
+<script>
+    const cat = document.getElementById("cat");
+    const mainArea = document.getElementById("mainArea");
+
+    let coins = 0;
+    let age = 0;
+    let hunger = 100;
+    let thirst = 100;
+    let life = 3;
+
+    let isDraggingCat = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    let heldItem = null;
+    let floatingItem = null;
+
+    let isSpacePressed = false;
+    let lastBrushTime = 0;
+    const brushCooldown = 250;
+
+    let moodLockUntil = 0;
+    let popupEnabled = true;
+    let darkTheme = false;
+
+    let inventory = {
+        battery: 0,
+        tuna: 0,
+        warmMilk: 0,
+        comb: 0,
+        autoCollector: 0,
+        poopCleaner: 0,
+        babysitter: 0,
+        restartTicket: 0
+    };
+
+    const shopItems = [
+        {
+            id: "battery",
+            name: "배터리",
+            icon: "🔋",
+            price: 1,
+            desc: "냥구의 주식."
+        },
+        {
+            id: "tuna",
+            name: "참치",
+            icon: "🐟",
+            price: 3,
+            desc: "냥구의 최애 간식"
+        },
+        {
+            id: "warmMilk",
+            name: "따듯한 우유",
+            icon: "🥛",
+            price: 4,
+            desc: "냥구를 재울 때 필요하고 냥구가 잠을 자는걸 성공하면 5코인을 얻어요"
+        },
+        {
+            id: "comb",
+            name: "빗",
+            icon: "🪮",
+            price: 5,
+            desc: "든 다음에 냥구 클릭 혹은 스페이스바 연타 시 코인 수집가능"
+        },
+        {
+            id: "autoCollector",
+            name: "코인 자동수집기",
+            icon: "🧲",
+            price: 8,
+            desc: "일정 시간마다 자동으로 코인 냠냠하는 수집기 (개당 1코인)"
+        },
+        {
+            id: "poopCleaner",
+            name: "냥구 똥 치워주는 사람",
+            icon: "🧹",
+            price: 50,
+            desc: "똥싸개 냥구의 똥을 치워주는 불쌍한 청소부"
+        },
+        {
+            id: "babysitter",
+            name: "베이비시터",
+            icon: "👶",
+            price: 100,
+            desc: "냥구를 자동으로 놀아주는 베이비시터"
+        },
+        {
+            id: "restartTicket",
+            name: "냥구 다시키우기권",
+            icon: "🎫",
+            price: 300,
+            desc: "개발자도 말리는 어이없는 트롤링 아이템"
+        }
+    ];
+
+    function toggleMenu() {
+        const menu = document.getElementById("menuContent");
+        const btn = document.querySelector(".menuMainBtn");
+
+        menu.classList.toggle("open");
+        btn.textContent = menu.classList.contains("open") ? "메뉴 닫기" : "메뉴 열기";
+    }
+
+    function toggleSection(id) {
+        const section = document.getElementById(id);
+        section.style.display = section.style.display === "none" ? "block" : "none";
+    }
+
+    function toggleTheme() {
+        darkTheme = !darkTheme;
+        document.body.classList.toggle("dark", darkTheme);
+        showMessage(darkTheme ? "검정 테마로 변경했습니다." : "하양 테마로 변경했습니다.");
+    }
+
+    function togglePopup() {
+        popupEnabled = !popupEnabled;
+        showMessage(popupEnabled ? "팝업창을 켰습니다." : "팝업창을 껐습니다.", true);
+    }
+
+    function updateUI() {
+        document.getElementById("coin").textContent = coins;
+        document.getElementById("ageText").textContent = age;
+        document.getElementById("hunger").textContent = hunger;
+        document.getElementById("thirst").textContent = thirst;
+        document.getElementById("lifeText").textContent = life + " / 3";
+        document.getElementById("heldText").textContent = heldItem ? getItemName(heldItem) : "없음";
+
+        if (Date.now() < moodLockUntil) {
+            return;
+        }
+
+        if (hunger <= 30 || thirst <= 30) {
+            setCatMood("sad");
+            document.getElementById("statusText").textContent = "슬픔";
+        } else {
+            setCatMood("happy");
+            document.getElementById("statusText").textContent = "기분 좋음";
+        }
+    }
+
+    function getItemName(id) {
+        const item = shopItems.find(x => x.id === id);
+        return item ? item.name : id;
+    }
+
+    function getItemIcon(id) {
+        const item = shopItems.find(x => x.id === id);
+        return item ? item.icon : "?";
+    }
+
+    function setCatMood(mood) {
+        if (mood === "happy") {
+            cat.src = "nyanggu_happy.png";
+        } else if (mood === "angry") {
+            cat.src = "nyanggu_angry.png";
+        } else if (mood === "sad") {
+            cat.src = "nyanggu_sad.png";
+        } else if (mood === "sleep") {
+            cat.src = "nyanggu_sleep.png";
+        } else if (mood === "blink") {
+            cat.src = "nyanggu_blink.png";
+        }
+    }
+
+    function setTemporaryMood(mood, duration) {
+        moodLockUntil = Date.now() + duration;
+        setCatMood(mood);
+
+        setTimeout(() => {
+            if (Date.now() >= moodLockUntil) {
+                moodLockUntil = 0;
+                updateUI();
+            }
+        }, duration);
+    }
+
+    function showMessage(text, forceShow = false) {
+        if (!popupEnabled && !forceShow) {
+            return;
+        }
+
+        const box = document.getElementById("messageBox");
+        box.textContent = text;
+        box.style.display = "block";
+
+        setTimeout(() => {
+            box.style.display = "none";
+        }, 1500);
+    }
+
+    function openPanel(title, content) {
+        const panel = document.getElementById("sidePanel");
+        panel.style.display = "block";
+        panel.innerHTML = `
+            <button class="closeBtn" onclick="closePanel()">닫기</button>
+            <h2>${title}</h2>
+            ${content}
+        `;
+    }
+
+    function closePanel() {
+        document.getElementById("sidePanel").style.display = "none";
+    }
+
+    function showDeveloper() {
+        openPanel("개발자", `
+            <div class="panelItem">
+                <div>
+                    <div class="itemName">정혜원</div>
+                    <div class="itemDesc">힘들었ㄷr</div>
+                </div>
+            </div>
+        `);
+    }
+
+    function showLanguage() {
+        openPanel("사용언어", `
+            <div class="panelItem">
+                <div>
+                    <div class="itemName">html</div>
+                    <div class="itemDesc">게임 화면 구조를 만드는 데 사용했습니다</div>
+                </div>
+            </div>
+            <div class="panelItem">
+                <div>
+                    <div class="itemName">JSON</div>
+                    <div class="itemDesc">아이템 정보처럼 데이터를 정리하는 형식으로 사용할 수 있어요.</div>
+                </div>
+            </div>
+            <div class="smallText">
+                html이랑 json 파일 합쳐놓은 쌈뽕한 게임
+            </div>
+        `);
+    }
+
+    function showProfile() {
+        openPanel("냥구 프로필", `
+            <div class="panelItem">
+                <div>
+                    <div class="itemName">이름 : 냥구</div>
+                    <div class="itemDesc">나이 : ${age}세</div>
+                    <div class="itemDesc">성격 : 기분이 좋으면 잘 놀고, 배고프면 슬퍼집니다.</div>
+                    <div class="itemDesc">좋아하는 것 : 참치, 따듯한 우유, 빗질</div>
+                    <div class="itemDesc">현재 상태 : ${document.getElementById("statusText").textContent}</div>
+                    <div class="itemDesc">체력 : ${life} / 3</div>
+                    <div class="itemDesc">배고픔 : ${hunger}</div>
+                    <div class="itemDesc">목마름 : ${thirst}</div>
+                </div>
+            </div>
+        `);
+    }
+
+    function openShop() {
+        let html = "";
+
+        shopItems.forEach(item => {
+            html += `
+                <div class="panelItem">
+                    <div>
+                        <div class="itemName">${item.name}</div>
+                        <div class="itemDesc">${item.desc}</div>
+                        <div class="itemDesc">가격 : ${item.price}코인</div>
+                    </div>
+                    <button class="panelBtn" onclick="buyItem('${item.id}')">구매</button>
+                </div>
+            `;
+        });
+
+        openPanel("상점", html);
+    }
+
+    function openInventory() {
+        let html = "";
+
+        shopItems.forEach(item => {
+            const buttonText = heldItem === item.id ? "내려놓기" : "들기";
+
+            html += `
+                <div class="panelItem">
+                    <div>
+                        <div class="itemName">${item.name}</div>
+                        <div class="itemDesc">보유 : ${inventory[item.id]}개</div>
+                    </div>
+                    <button class="panelBtn" onclick="holdItem('${item.id}')">${buttonText}</button>
+                </div>
+            `;
+        });
+
+        openPanel("인벤토리", html);
+    }
+
+    function showFeedPanel() {
+        openPanel("먹이기", `
+            <div class="panelItem">
+                <div>
+                    <div class="itemName">배터리 먹이기</div>
+                    <div class="itemDesc">보유 : ${inventory.battery}개</div>
+                </div>
+                <button class="panelBtn" onclick="feedBattery()">먹이기</button>
+            </div>
+
+            <div class="panelItem">
+                <div>
+                    <div class="itemName">참치 먹이기</div>
+                    <div class="itemDesc">보유 : ${inventory.tuna}개</div>
+                </div>
+                <button class="panelBtn" onclick="feedTuna()">먹이기</button>
+            </div>
+
+            <div class="panelItem">
+                <div>
+                    <div class="itemName">따듯한 우유로 재우기</div>
+                    <div class="itemDesc">보유 : ${inventory.warmMilk}개</div>
+                </div>
+                <button class="panelBtn" onclick="sleepCat()">재우기</button>
+            </div>
+        `);
+    }
+
+    function buyItem(id) {
+        const item = shopItems.find(x => x.id === id);
+
+        if (coins < item.price) {
+            showMessage("코인이 부족해요");
+            return;
+        }
+
+        if (id === "restartTicket") {
+            const q1 = confirm("잘못 클릭하셨어요?");
+            if (!q1) return;
+
+            const q2 = confirm("진짜로요?");
+            if (!q2) return;
+            
+            const q3 = confirm("이 사실을 알면 냥구가 슬퍼할지도 모르는데 진짜 진심인가요?");
+            if (!q3) return;
+
+            const q4 = confirm("진짜 무자비하네 아니 저기요 계속 이럴거예요?");
+            if (!q4) return;
+
+            const q5 = confirm("기훈이형 이러는거 아니야!!!");
+            if (!q5) return;
+
+            const q6 = confirm("진짜 할 거죠? 나는 모릅니다 못되돌린다고");
+            if (!q6) return;
+
+            const q7 = confirm("여기까지 왔다는건 그냥 버리고싶다는거니 님 알아서하셈 ㅅㄱ");
+            if (!q7) return;
+        }
+
+        coins -= item.price;
+        inventory[id]++;
+
+        showMessage(item.name + " 구매 완료");
+        updateUI();
+
+        if (id === "restartTicket") {
+            runawayCat();
+            return;
+        }
+
+        openShop();
+    }
+
+    function holdItem(id) {
+        if (heldItem === id) {
+            putDownItem();
+            showMessage(getItemName(id) + "을 내려놓았습니다.");
+            openInventory();
+            return;
+        }
+
+        if (inventory[id] <= 0) {
+            showMessage("보유한 물건이 없습니다.");
+            return;
+        }
+
+        heldItem = id;
+        createFloatingItem(id);
+        showMessage(getItemName(id) + "을 들었습니다.");
+        updateUI();
+        openInventory();
+    }
+
+    function putDownItem() {
+        heldItem = null;
+
+        if (floatingItem) {
+            floatingItem.remove();
+            floatingItem = null;
+        }
+
+        updateUI();
+    }
+
+    function putDownItemByButton() {
+        if (!heldItem) {
+            showMessage("현재 들고 있는 물건이 없습니다.");
+            return;
+        }
+
+        const itemName = getItemName(heldItem);
+        putDownItem();
+        showMessage(itemName + "을 내려놓았습니다.");
+
+        if (document.getElementById("sidePanel").style.display === "block") {
+            openInventory();
+        }
+    }
+
+    function createFloatingItem(id) {
+        if (floatingItem) {
+            floatingItem.remove();
+        }
+
+        floatingItem = document.createElement("div");
+        floatingItem.className = "floatingItem";
+        floatingItem.textContent = getItemIcon(id);
+
+        document.body.appendChild(floatingItem);
+    }
+
+    document.addEventListener("mousemove", (e) => {
+        if (floatingItem) {
+            floatingItem.style.left = e.clientX + 14 + "px";
+            floatingItem.style.top = e.clientY + 14 + "px";
+        }
+
+        if (isDraggingCat) {
+            const rect = mainArea.getBoundingClientRect();
+
+            let x = e.clientX - rect.left - dragOffsetX;
+            let y = e.clientY - rect.top - dragOffsetY;
+
+            const visibleBox = {
+                left: 15,
+                top: 15,
+                right: 15,
+                bottom: 15
+            };
+
+            const visibleWidth = cat.offsetWidth - visibleBox.left - visibleBox.right;
+            const visibleHeight = cat.offsetHeight - visibleBox.top - visibleBox.bottom;
+
+            x = Math.max(
+                -visibleBox.left,
+                Math.min(x, mainArea.clientWidth - visibleWidth - visibleBox.left)
+            );
+
+            y = Math.max(
+                -visibleBox.top,
+                Math.min(y, mainArea.clientHeight - visibleHeight - visibleBox.top)
+            );
+
+            cat.style.left = x + "px";
+            cat.style.top = y + "px";
+        }
+    });
+
+    cat.addEventListener("mousedown", (e) => {
+        if (heldItem) {
+            return;
+        }
+
+        e.preventDefault();
+
+        const catRect = cat.getBoundingClientRect();
+
+        dragOffsetX = e.clientX - catRect.left;
+        dragOffsetY = e.clientY - catRect.top;
+
+        isDraggingCat = true;
+        cat.style.cursor = "grabbing";
+    });
+
+    document.addEventListener("mouseup", () => {
+        if (isDraggingCat) {
+            isDraggingCat = false;
+            cat.style.cursor = "grab";
+        }
+    });
+
+    cat.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        if (!heldItem) {
+            return;
+        }
+
+        useHeldItemOnCat();
+    });
+
+    function useHeldItemOnCat() {
+        if (heldItem === "battery") {
+            feedBattery();
+            return;
+        }
+
+        if (heldItem === "tuna") {
+            feedTuna();
+            return;
+        }
+
+        if (heldItem === "warmMilk") {
+            sleepCat();
+            return;
+        }
+
+        if (heldItem === "comb") {
+            brushCat();
+            return;
+        }
+
+        if (heldItem === "autoCollector") {
+            showMessage("자동수집기는 가지고 있으면 자동으로 작동합니다.");
+            return;
+        }
+
+        if (heldItem === "poopCleaner") {
+            showMessage("청소부는 똥이 생기면 자동으로 작동합니다.");
+            return;
+        }
+
+        if (heldItem === "babysitter") {
+            showMessage("베이비시터는 자동으로 냥구를 돌봅니다.");
+            return;
+        }
+
+        if (heldItem === "restartTicket") {
+            showMessage("다시키우기권은 구매하면 바로 발동됩니다.");
+            return;
+        }
+    }
+
+    mainArea.addEventListener("click", (e) => {
+        if (e.target === mainArea && heldItem) {
+            putDownItemByButton();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+            e.preventDefault();
+
+            if (isSpacePressed) {
+                return;
+            }
+
+            isSpacePressed = true;
+
+            if (heldItem === "comb") {
+                brushCat();
+            }
+        }
+
+        if (e.code === "Escape") {
+            putDownItemByButton();
+        }
+    });
+
+    document.addEventListener("keyup", (e) => {
+        if (e.code === "Space") {
+            isSpacePressed = false;
+        }
+    });
+
+    function brushCat() {
+        const now = Date.now();
+
+        if (now - lastBrushTime < brushCooldown) {
+            return;
+        }
+
+        lastBrushTime = now;
+
+        const catRect = cat.getBoundingClientRect();
+        const areaRect = mainArea.getBoundingClientRect();
+
+        const reward = Math.random() < 0.18 ? 2 : 1;
+        coins += reward;
+
+        showComboText(
+            "+" + reward + " 코인",
+            catRect.left - areaRect.left + 145,
+            catRect.top - areaRect.top + 80
+        );
+
+        setTemporaryMood("blink", 250);
+        updateUI();
+    }
+
+    function showComboText(text, x, y) {
+        const combo = document.createElement("div");
+        combo.className = "comboText";
+        combo.textContent = text;
+        combo.style.left = x + "px";
+        combo.style.top = y + "px";
+
+        mainArea.appendChild(combo);
+
+        setTimeout(() => {
+            combo.remove();
+        }, 800);
+    }
+
+    function feedBattery() {
+        if (inventory.battery <= 0) {
+            showMessage("배터리가 없습니다.");
+            return;
+        }
+
+        inventory.battery--;
+        hunger = Math.min(100, hunger + 15);
+        thirst = Math.min(100, thirst + 5);
+
+        setTemporaryMood("happy", 500);
+        showMessage("냥구가 배터리를 먹었습니다.");
+        updateUI();
+    }
+
+    function feedTuna() {
+        if (inventory.tuna <= 0) {
+            showMessage("참치가 없습니다.");
+            return;
+        }
+
+        inventory.tuna--;
+        hunger = Math.min(100, hunger + 35);
+        thirst = Math.min(100, thirst + 10);
+        coins += 1;
+
+        setTemporaryMood("happy", 500);
+        showMessage("냥구가 참치를 먹었습니다. 보너스 1코인");
+        updateUI();
+    }
+
+    function sleepCat() {
+        if (inventory.warmMilk <= 0) {
+            showMessage("따듯한 우유가 필요합니다.");
+            return;
+        }
+
+        inventory.warmMilk--;
+
+        const success = Math.random() < 0.7;
+
+        if (success) {
+            coins += 5;
+            hunger = Math.min(100, hunger + 5);
+            thirst = Math.min(100, thirst + 10);
+
+            setTemporaryMood("sleep", 2500);
+            document.getElementById("statusText").textContent = "자는 중";
+            showMessage("냥구가 잘 잤습니다. 5코인 획득");
+        } else {
+            setTemporaryMood("angry", 900);
+            document.getElementById("statusText").textContent = "잠 실패";
+            showMessage("냥구가 잠을 자는 데 실패했습니다.");
+        }
+
+        updateUI();
+
+        if (document.getElementById("sidePanel").style.display === "block") {
+            showFeedPanel();
+        }
+    }
+
+    function growAge() {
+        age += 1;
+        showMessage("냥구가 한 살 더 먹었습니다.");
+        updateUI();
+
+        if (document.getElementById("sidePanel").style.display === "block") {
+            const title = document.querySelector("#sidePanel h2");
+            if (title && title.textContent === "냥구 프로필") {
+                showProfile();
+            }
+        }
+    }
+
+    function runawayCat() {
+        document.getElementById("endScreen").style.display = "flex";
+    }
+
+    function resetGame() {
+        coins = 0;
+        age = 0;
+        hunger = 100;
+        thirst = 100;
+        life = 3;
+
+        inventory = {
+            battery: 0,
+            tuna: 0,
+            warmMilk: 0,
+            comb: 0,
+            autoCollector: 0,
+            poopCleaner: 0,
+            babysitter: 0,
+            restartTicket: 0
+        };
+
+        heldItem = null;
+        isDraggingCat = false;
+        isSpacePressed = false;
+        lastBrushTime = 0;
+        moodLockUntil = 0;
+
+        if (floatingItem) {
+            floatingItem.remove();
+            floatingItem = null;
+        }
+
+        document.querySelectorAll(".poop").forEach(p => p.remove());
+
+        document.getElementById("endScreen").style.display = "none";
+
+        cat.style.left = "215px";
+        cat.style.top = "20px";
+
+        updateUI();
+    }
+
+    function spawnPoop() {
+        const poop = document.createElement("img");
+        poop.src = "poop.png";
+        poop.className = "poop";
+
+        poop.style.left = Math.random() * (mainArea.clientWidth - 80) + "px";
+        poop.style.top = Math.random() * (mainArea.clientHeight - 180) + "px";
+
+        poop.onclick = (e) => {
+            e.stopPropagation();
+            poop.remove();
+            coins += 1;
+            showMessage("똥을 치웠습니다. 1코인 획득");
+            updateUI();
+        };
+
+        mainArea.appendChild(poop);
+
+        if (inventory.poopCleaner > 0) {
+            setTimeout(() => {
+                if (poop.parentNode) {
+                    poop.remove();
+                    showMessage("청소부가 똥을 치웠습니다.");
+                }
+            }, 1000);
+        }
+    }
+
+    setInterval(() => {
+        spawnPoop();
+    }, 30000);
+
+    setInterval(() => {
+        if (inventory.autoCollector > 0) {
+            coins += inventory.autoCollector;
+            showMessage("자동수집기 " + inventory.autoCollector + "코인 획득");
+            updateUI();
+        }
+    }, 7000);
+
+    setInterval(() => {
+        if (inventory.babysitter > 0) {
+            hunger = Math.min(100, hunger + 5);
+            thirst = Math.min(100, thirst + 5);
+            updateUI();
+        }
+    }, 5000);
+
+    setInterval(() => {
+        hunger = Math.max(0, hunger - 1);
+        thirst = Math.max(0, thirst - 1);
+
+        if (hunger === 0 || thirst === 0) {
+            life = Math.max(0, life - 1);
+            setTemporaryMood("angry", 800);
+        }
+
+        if (life === 0) {
+            runawayCat();
+        }
+
+        updateUI();
+    }, 8000);
+
+    setInterval(() => {
+        if (!isDraggingCat && !heldItem && hunger > 30 && thirst > 30) {
+            setTemporaryMood("blink", 180);
+        }
+    }, 5000);
+
+    setInterval(() => {
+        growAge();
+    }, 3600000);
+
+    updateUI();
+</script>
+
+</body>
+</html>
